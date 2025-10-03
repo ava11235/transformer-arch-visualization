@@ -3,7 +3,9 @@
 An interactive, educational visualization of how transformer neural networks process text and make predictions. Watch step-by-step as the model analyzes "The cat is [MASK]" and predicts the missing word.
 
 [Try the visualization](https://ava11235.github.io/transformer-arch-visualization/index.html)
+
 Note: This visualization is intended for desktop experience only. 
+
 <img width="1662" height="985" alt="image" src="https://github.com/user-attachments/assets/ca172ee0-0e4b-4071-8723-940f04af1d39" />
 
 
@@ -102,5 +104,6 @@ After using this visualization, you'll understand:
 
 
 This educational visualization is provided as-is for learning purposes. Feel free to use, modify, and share for educational use.
+
 
 
