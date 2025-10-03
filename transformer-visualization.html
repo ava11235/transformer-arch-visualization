@@ -1,0 +1,1041 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Transformer Architecture Visualization</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        }
+        
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+        }
+        
+        .main-content {
+            display: flex;
+            gap: 20px;
+            align-items: flex-start;
+        }
+        
+        .controls-sidebar {
+            flex: 0 0 200px;
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            border-left: 4px solid #667eea;
+            position: sticky;
+            top: 20px;
+            height: fit-content;
+        }
+        
+        .controls-sidebar h3 {
+            margin-top: 0;
+            color: #333;
+            font-size: 1.1em;
+        }
+        
+        .controls-sidebar button {
+            width: 100%;
+            margin: 5px 0;
+        }
+        
+        .architecture {
+            flex: 2;
+            min-height: 600px;
+        }
+        
+        .example {
+            flex: 1;
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            border-left: 4px solid #667eea;
+            position: sticky;
+            top: 20px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        
+        .layer {
+            background: #fff;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            margin: 10px 0;
+            padding: 12px;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+        
+        .layer.active {
+            border-color: #667eea;
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+            transform: translateY(-2px);
+        }
+        
+        .layer-title {
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 1.1em;
+        }
+        
+        .tokens {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin: 10px 0;
+        }
+        
+        .token {
+            background: #e3f2fd;
+            padding: 8px 12px;
+            border-radius: 20px;
+            border: 1px solid #90caf9;
+            font-size: 0.9em;
+            transition: all 0.3s ease;
+        }
+        
+        .token.active {
+            background: #667eea;
+            color: white;
+            transform: scale(1.05);
+        }
+        
+        .embedding-viz {
+            display: grid;
+            grid-template-columns: repeat(12, 1fr);
+            gap: 2px;
+            margin: 8px 0;
+            max-width: 300px;
+        }
+        
+        .embedding-cell {
+            width: 12px;
+            height: 12px;
+            background: #f0f0f0;
+            border-radius: 2px;
+            transition: all 0.3s ease;
+            position: relative;
+            cursor: pointer;
+        }
+        
+        .embedding-numbers {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+            margin: 5px 0;
+            font-size: 0.75em;
+            font-family: monospace;
+        }
+        
+        .embedding-number {
+            background: #f8f9fa;
+            padding: 2px 4px;
+            border-radius: 3px;
+            border: 1px solid #dee2e6;
+        }
+        
+        .multi-head-container {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+        
+        .attention-head {
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 8px;
+            background: #fafafa;
+        }
+        
+        .head-title {
+            font-size: 0.8em;
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: #555;
+        }
+        
+        .attention-matrix {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 2px;
+            margin: 8px 0;
+            max-width: 200px;
+        }
+        
+        .attention-cell {
+            width: 25px;
+            height: 25px;
+            background: #f0f0f0;
+            border-radius: 3px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.65em;
+            transition: all 0.3s ease;
+        }
+        
+        .controls {
+            text-align: center;
+            margin: 20px 0;
+        }
+        
+        .positional-example {
+            background: #f0f8ff;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 8px 0;
+            border: 1px solid #b3d9ff;
+        }
+        
+        .pos-formula {
+            font-family: monospace;
+            font-size: 0.8em;
+            background: #fff;
+            padding: 5px;
+            border-radius: 3px;
+            margin: 5px 0;
+        }
+        
+        .relu-explanation {
+            background: #fff3e0;
+            padding: 8px;
+            border-radius: 5px;
+            margin: 5px 0;
+            border-left: 3px solid #ff9800;
+            font-size: 0.8em;
+        }
+        
+        .ff-layer-viz {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin: 8px 0;
+            font-size: 0.8em;
+        }
+        
+        .ff-neurons {
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+        }
+        
+        .ff-neuron {
+            width: 8px;
+            height: 8px;
+            background: #ddd;
+            border-radius: 50%;
+            transition: all 0.3s ease;
+        }
+        
+        .ff-arrow {
+            font-size: 1.2em;
+            color: #667eea;
+        }
+        
+        button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1em;
+            margin: 0 10px;
+            transition: all 0.3s ease;
+        }
+        
+        button:hover {
+            background: #5a6fd8;
+            transform: translateY(-2px);
+        }
+        
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .step-info {
+            background: #e8f5e8;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            border-left: 4px solid #4caf50;
+        }
+        
+        .prediction {
+            background: #fff3e0;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            border-left: 4px solid #ff9800;
+        }
+        
+        .probability-bar {
+            background: #f0f0f0;
+            height: 20px;
+            border-radius: 10px;
+            margin: 5px 0;
+            overflow: hidden;
+        }
+        
+        .probability-fill {
+            background: linear-gradient(90deg, #4caf50, #8bc34a);
+            height: 100%;
+            transition: width 0.5s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 0.8em;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🤖 Transformer Architecture Visualization</h1>
+        
+        <div class="main-content">
+            <div class="controls-sidebar">
+                <h3>🎮 Controls</h3>
+                <button onclick="startAnimation()">Start Animation</button>
+                <button onclick="resetAnimation()">Reset</button>
+                <button onclick="nextStep()" id="nextBtn" disabled>Next Step</button>
+                
+                <div style="margin-top: 20px; font-size: 0.9em; color: #666;">
+                    <strong>Instructions:</strong><br>
+                    1. Click "Start Animation"<br>
+                    2. Use "Next Step" to progress<br>
+                    3. Watch the right panel for explanations
+                </div>
+            </div>
+            
+            <div class="architecture">
+                <!-- 1. Input Processing -->
+                <div class="layer" id="input-processing">
+                    <div class="layer-title">1️⃣ Input Processing</div>
+                    <div style="font-size: 0.9em; margin-bottom: 8px;">Raw text → Token IDs → Add positions</div>
+                    <div class="tokens" id="input-tokens">
+                        <div class="token">The</div>
+                        <div class="token">cat</div>
+                        <div class="token">is</div>
+                        <div class="token">[MASK]</div>
+                    </div>
+                    <div style="margin: 8px 0; font-size: 0.8em;">↓ Tokenization ↓</div>
+                    <div class="tokens" id="tokenized">
+                        <div class="token">1234</div>
+                        <div class="token">5678</div>
+                        <div class="token">9012</div>
+                        <div class="token">3456</div>
+                    </div>
+                </div>
+                
+                <!-- 2. Embedding Layer -->
+                <div class="layer" id="embedding-layer">
+                    <div class="layer-title">2️⃣ Embedding Layer</div>
+                    <div style="font-size: 0.9em; margin-bottom: 8px;">Convert tokens to vectors + position info</div>
+                    <div id="embeddings-container"></div>
+                </div>
+                
+                <!-- 3. Encoder -->
+                <div class="layer" id="encoder-layer">
+                    <div class="layer-title">3️⃣ Encoder</div>
+                    <div style="font-size: 0.9em; margin-bottom: 8px;">
+                        <strong>Self-Attention:</strong> Each word looks at other words<br>
+                        <strong>Feed Forward:</strong> Processes attention outputs
+                    </div>
+                    <div id="encoder-content"></div>
+                </div>
+                
+                <!-- 4. Decoder -->
+                <div class="layer" id="decoder-layer">
+                    <div class="layer-title">4️⃣ Decoder</div>
+                    <div style="font-size: 0.9em; margin-bottom: 8px;">
+                        <strong>Masked Self-Attention:</strong> Only looks at previous words<br>
+                        <strong>Cross-Attention:</strong> Connects to encoder information
+                    </div>
+                    <div id="decoder-content"></div>
+                </div>
+                
+                <!-- 5. Output -->
+                <div class="layer" id="output-layer">
+                    <div class="layer-title">5️⃣ Output</div>
+                    <div style="font-size: 0.9em; margin-bottom: 8px;">Convert to vocabulary → Get word probabilities</div>
+                    <div id="output-probs"></div>
+                </div>
+            </div>
+            
+            <div class="example">
+                <h3>🔍 Step-by-Step Example</h3>
+                <div id="step-explanation">
+                    <div style="background: #e3f2fd; padding: 15px; border-radius: 8px; margin-bottom: 15px; border-left: 4px solid #2196f3;">
+                        <h4 style="margin-top: 0; color: #1976d2;">What This Shows:</h4>
+                        <p><strong>Task:</strong> Fill in the blank - predict what word should replace [MASK]</p>
+                        <p><strong>Input:</strong> "The cat is [MASK]"</p>
+                        <p><strong>Goal:</strong> The transformer will analyze the sentence and predict the most likely word</p>
+                        <p><strong>Expected Result:</strong> Words like "sleeping", "sitting", or "walking" with confidence scores</p>
+                        
+                        <div style="margin-top: 10px; padding: 10px; background: white; border-radius: 5px;">
+                            <strong>🧠 How it works:</strong> The transformer reads the entire sentence, understands that "cat" is the subject and "is" indicates an action or state, then predicts what cats typically do.
+                        </div>
+                    </div>
+                    <p><em>Click "Start Animation" to watch each step of this process!</em></p>
+                </div>
+                
+                <div class="step-info" id="current-step" style="display: none;">
+                    <strong>Current Step:</strong>
+                    <div id="step-details"></div>
+                </div>
+                
+                <div class="prediction" id="prediction-section" style="display: none;">
+                    <strong>🎯 Top Predictions:</strong>
+                    <div id="predictions"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentStep = 0;
+        let isAnimating = false;
+        
+        const steps = [
+            {
+                layer: 'input-processing',
+                title: 'Input Processing',
+                description: 'Start with "The cat is [MASK]". First, tokenize each word into numbers (The→1234, cat→5678, is→9012, [MASK]→3456), then add position markers so the model knows word order.',
+                action: () => {
+                    document.querySelectorAll('#input-tokens .token').forEach((token, i) => {
+                        setTimeout(() => token.classList.add('active'), i * 400);
+                    });
+                    setTimeout(() => {
+                        document.querySelectorAll('#tokenized .token').forEach((token, i) => {
+                            setTimeout(() => token.classList.add('active'), i * 400);
+                        });
+                    }, 1600);
+                }
+            },
+            {
+                layer: 'embedding-layer',
+                title: 'Embedding Layer', 
+                description: 'Convert each token to a rich vector representation. "cat" becomes [0.6, -0.4, 0.2...] capturing "animal", "pet", "small creature". Position info is added so the model knows "cat" comes before "is".',
+                action: () => {
+                    createEmbeddings();
+                }
+            },
+            {
+                layer: 'encoder-layer',
+                title: 'Encoder',
+                description: 'Self-Attention: "cat" looks at "The" (determiner), "is" (verb), "[MASK]" (unknown action) to understand relationships. Feed Forward: Enhances each word\'s meaning with context.',
+                action: () => {
+                    createEncoderSection();
+                }
+            },
+            {
+                layer: 'decoder-layer',
+                title: 'Decoder',
+                description: 'Masked Self-Attention: Can only see previous words (no peeking ahead). Cross-Attention: Focuses on encoder\'s understanding of "The cat is" to predict what comes next.',
+                action: () => {
+                    createDecoderSection();
+                }
+            },
+            {
+                layer: 'output-layer',
+                title: 'Output',
+                description: 'Convert final representations to vocabulary probabilities. Result: "sleeping" (70%), "sitting" (20%), "walking" (10%). The model learned cats are often described as sleeping!',
+                action: () => {
+                    createSimplifiedOutput();
+                }
+            }
+        ];
+        
+        function startAnimation() {
+            resetAnimation();
+            isAnimating = true;
+            currentStep = 0;
+            document.getElementById('nextBtn').disabled = false;
+            document.getElementById('current-step').style.display = 'block';
+            nextStep();
+        }
+        
+        function resetAnimation() {
+            currentStep = 0;
+            isAnimating = false;
+            document.getElementById('nextBtn').disabled = true;
+            document.getElementById('current-step').style.display = 'none';
+            document.getElementById('prediction-section').style.display = 'none';
+            
+            // Reset all layers
+            document.querySelectorAll('.layer').forEach(layer => {
+                layer.classList.remove('active');
+                layer.style.background = '';
+                layer.style.animation = '';
+            });
+            
+            // Reset all tokens
+            document.querySelectorAll('.token').forEach(token => {
+                token.classList.remove('active');
+            });
+            
+            // Clear dynamic content
+            document.getElementById('embeddings-container').innerHTML = '';
+            document.getElementById('encoder-content').innerHTML = '';
+            document.getElementById('decoder-content').innerHTML = '';
+            document.getElementById('output-probs').innerHTML = '';
+        }
+        
+        function nextStep() {
+            if (currentStep >= steps.length) return;
+            
+            const step = steps[currentStep];
+            
+            // Activate current layer
+            document.querySelectorAll('.layer').forEach(layer => layer.classList.remove('active'));
+            document.getElementById(step.layer).classList.add('active');
+            
+            // Update step info
+            document.getElementById('step-details').innerHTML = `
+                <strong>${step.title}</strong><br>
+                ${step.description}
+            `;
+            
+            // Execute step action
+            step.action();
+            
+            currentStep++;
+            
+            if (currentStep >= steps.length) {
+                document.getElementById('nextBtn').disabled = true;
+                document.getElementById('prediction-section').style.display = 'block';
+            }
+        }
+        
+        function createEmbeddings() {
+            const container = document.getElementById('embeddings-container');
+            const tokens = ['The', 'cat', 'is', '[MASK]'];
+            
+            // Sample embedding values for demonstration
+            const sampleEmbeddings = [
+                [0.2, -0.1, 0.8, -0.3, 0.5, -0.7, 0.1, 0.9],  // The
+                [0.6, -0.4, 0.2, 0.7, -0.2, 0.3, -0.8, 0.4],  // cat
+                [-0.1, 0.5, -0.6, 0.3, 0.8, -0.2, 0.7, -0.5], // is
+                [0.3, -0.7, 0.4, -0.1, 0.6, 0.2, -0.4, 0.8]   // [MASK]
+            ];
+            
+            // Add position encoding explanation first
+            const positionDiv = document.createElement('div');
+            positionDiv.className = 'positional-example';
+            positionDiv.innerHTML = `
+                <strong>Vectors + Position Info:</strong><br>
+                Each word gets meaning + position: "cat" = animal concept + position 1
+            `;
+            container.appendChild(positionDiv);
+            
+            tokens.forEach((token, tokenIdx) => {
+                const tokenDiv = document.createElement('div');
+                tokenDiv.innerHTML = `<strong>${token} (position ${tokenIdx}):</strong>`;
+                tokenDiv.style.fontSize = '0.9em';
+                tokenDiv.style.marginTop = '10px';
+                tokenDiv.style.marginBottom = '5px';
+                
+                const embeddingDiv = document.createElement('div');
+                embeddingDiv.className = 'embedding-viz';
+                
+                // Show numerical values
+                const numbersDiv = document.createElement('div');
+                numbersDiv.className = 'embedding-numbers';
+                sampleEmbeddings[tokenIdx].forEach(val => {
+                    const numSpan = document.createElement('span');
+                    numSpan.className = 'embedding-number';
+                    numSpan.textContent = val.toFixed(1);
+                    numbersDiv.appendChild(numSpan);
+                });
+                
+                for (let i = 0; i < 24; i++) {
+                    const cell = document.createElement('div');
+                    cell.className = 'embedding-cell';
+                    const intensity = Math.random();
+                    setTimeout(() => {
+                        cell.style.background = `hsl(${tokenIdx * 60}, 70%, ${30 + intensity * 50}%)`;
+                        // Add tooltip with value
+                        if (i < 8) {
+                            cell.title = `Dimension ${i}: ${sampleEmbeddings[tokenIdx][i]}`;
+                        }
+                    }, i * 30);
+                    embeddingDiv.appendChild(cell);
+                }
+                
+                container.appendChild(tokenDiv);
+                container.appendChild(numbersDiv);
+                container.appendChild(embeddingDiv);
+            });
+        }
+        
+        function createPositionalEncodings() {
+            const container = document.getElementById('positional-container');
+            const tokens = ['The', 'cat', 'is', '[MASK]'];
+            
+            // Example positional encoding values (simplified)
+            const posEncodings = [
+                [0.0, 1.0, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0],     // Position 0
+                [0.84, 0.54, 0.09, 0.99, 0.008, 1.0, 0.0001, 1.0], // Position 1  
+                [0.91, -0.42, 0.18, 0.98, 0.016, 1.0, 0.0002, 1.0], // Position 2
+                [0.14, -0.99, 0.27, 0.96, 0.024, 1.0, 0.0003, 1.0]  // Position 3
+            ];
+            
+            // Add formula explanation
+            const formulaDiv = document.createElement('div');
+            formulaDiv.className = 'positional-example';
+            formulaDiv.innerHTML = `
+                <div class="pos-formula">PE(pos,2i) = sin(pos/10000^(2i/d_model))</div>
+                <div class="pos-formula">PE(pos,2i+1) = cos(pos/10000^(2i/d_model))</div>
+                <div style="font-size: 0.8em; margin-top: 5px;">
+                    Where pos = position, i = dimension index
+                </div>
+            `;
+            container.appendChild(formulaDiv);
+            
+            tokens.forEach((token, tokenIdx) => {
+                const tokenDiv = document.createElement('div');
+                tokenDiv.innerHTML = `<strong>Position ${tokenIdx} (${token}):</strong>`;
+                tokenDiv.style.fontSize = '0.9em';
+                tokenDiv.style.marginTop = '10px';
+                tokenDiv.style.marginBottom = '5px';
+                
+                // Show numerical values
+                const numbersDiv = document.createElement('div');
+                numbersDiv.className = 'embedding-numbers';
+                posEncodings[tokenIdx].forEach(val => {
+                    const numSpan = document.createElement('span');
+                    numSpan.className = 'embedding-number';
+                    numSpan.textContent = val.toFixed(2);
+                    numbersDiv.appendChild(numSpan);
+                });
+                
+                const posDiv = document.createElement('div');
+                posDiv.className = 'embedding-viz';
+                
+                for (let i = 0; i < 24; i++) {
+                    const cell = document.createElement('div');
+                    cell.className = 'embedding-cell';
+                    setTimeout(() => {
+                        // Use sine/cosine pattern for coloring
+                        const intensity = Math.abs(Math.sin(tokenIdx + i * 0.5));
+                        cell.style.background = `hsl(${240 + tokenIdx * 30}, 70%, ${30 + intensity * 50}%)`;
+                        
+                        if (i < 8) {
+                            cell.title = `Position ${tokenIdx}, Dim ${i}: ${posEncodings[tokenIdx][i]}`;
+                        }
+                    }, i * 20);
+                    posDiv.appendChild(cell);
+                }
+                
+                container.appendChild(tokenDiv);
+                container.appendChild(numbersDiv);
+                container.appendChild(posDiv);
+            });
+        }
+        
+        function createEncoderAttention() {
+            const container = document.getElementById('encoder-attention');
+            const tokens = ['The', 'cat', 'is', '[MASK]'];
+            
+            const encoderHead = {
+                name: 'Encoder Self-Attention',
+                description: 'All tokens can attend to all other tokens',
+                weights: [
+                    [0.2, 0.3, 0.3, 0.2],  // The
+                    [0.1, 0.4, 0.3, 0.2],  // cat  
+                    [0.2, 0.3, 0.3, 0.2],  // is
+                    [0.25, 0.25, 0.25, 0.25] // [MASK] - uniform attention initially
+                ]
+            };
+            
+            const headDiv = document.createElement('div');
+            headDiv.className = 'attention-head';
+            
+            const titleDiv = document.createElement('div');
+            titleDiv.className = 'head-title';
+            titleDiv.textContent = encoderHead.name;
+            headDiv.appendChild(titleDiv);
+            
+            const descDiv = document.createElement('div');
+            descDiv.style.fontSize = '0.7em';
+            descDiv.style.color = '#666';
+            descDiv.style.marginBottom = '8px';
+            descDiv.textContent = encoderHead.description;
+            headDiv.appendChild(descDiv);
+            
+            const matrixDiv = document.createElement('div');
+            matrixDiv.className = 'attention-matrix';
+            
+            encoderHead.weights.forEach((row, i) => {
+                row.forEach((weight, j) => {
+                    const cell = document.createElement('div');
+                    cell.className = 'attention-cell';
+                    cell.textContent = weight.toFixed(1);
+                    cell.title = `${tokens[i]} → ${tokens[j]}: ${weight.toFixed(2)}`;
+                    setTimeout(() => {
+                        cell.style.background = `rgba(76, 175, 80, ${weight})`;
+                        cell.style.color = weight > 0.3 ? 'white' : 'black';
+                        cell.style.transform = 'scale(1.2)';
+                        setTimeout(() => cell.style.transform = 'scale(1)', 300);
+                    }, (i * 4 + j) * 200);
+                    matrixDiv.appendChild(cell);
+                });
+            });
+            
+            headDiv.appendChild(matrixDiv);
+            container.appendChild(headDiv);
+        }
+        
+        function createDecoderAttention() {
+            const container = document.getElementById('decoder-attention');
+            const inputTokens = ['The', 'cat', 'is', '[MASK]'];
+            const outputTokens = ['<START>', 'sleeping'];
+            
+            // Masked Self-Attention
+            const maskedHead = {
+                name: 'Masked Self-Attention',
+                description: 'Can only attend to previous tokens (causal mask)',
+                weights: [
+                    [1.0, 0.0],  // <START> can only see itself
+                    [0.6, 0.4]   // 'sleeping' can see <START> and itself
+                ]
+            };
+            
+            // Cross-Attention  
+            const crossHead = {
+                name: 'Cross-Attention',
+                description: 'Decoder attends to encoder output',
+                weights: [
+                    [0.1, 0.2, 0.3, 0.4],  // <START> -> input tokens
+                    [0.1, 0.4, 0.3, 0.2]   // 'sleeping' -> input tokens
+                ]
+            };
+            
+            [maskedHead, crossHead].forEach((head, headIdx) => {
+                setTimeout(() => {
+                    const headDiv = document.createElement('div');
+                    headDiv.className = 'attention-head';
+                    
+                    const titleDiv = document.createElement('div');
+                    titleDiv.className = 'head-title';
+                    titleDiv.textContent = head.name;
+                    headDiv.appendChild(titleDiv);
+                    
+                    const descDiv = document.createElement('div');
+                    descDiv.style.fontSize = '0.7em';
+                    descDiv.style.color = '#666';
+                    descDiv.style.marginBottom = '8px';
+                    descDiv.textContent = head.description;
+                    headDiv.appendChild(descDiv);
+                    
+                    const matrixDiv = document.createElement('div');
+                    matrixDiv.className = 'attention-matrix';
+                    matrixDiv.style.gridTemplateColumns = headIdx === 0 ? 'repeat(2, 1fr)' : 'repeat(4, 1fr)';
+                    
+                    head.weights.forEach((row, i) => {
+                        row.forEach((weight, j) => {
+                            const cell = document.createElement('div');
+                            cell.className = 'attention-cell';
+                            cell.textContent = weight.toFixed(1);
+                            
+                            if (headIdx === 0) {
+                                cell.title = `${outputTokens[i]} → ${outputTokens[j]}: ${weight.toFixed(2)}`;
+                            } else {
+                                cell.title = `${outputTokens[i]} → ${inputTokens[j]}: ${weight.toFixed(2)}`;
+                            }
+                            
+                            setTimeout(() => {
+                                const color = headIdx === 0 ? '233, 30, 99' : '63, 81, 181';
+                                cell.style.background = `rgba(${color}, ${weight})`;
+                                cell.style.color = weight > 0.4 ? 'white' : 'black';
+                                cell.style.transform = 'scale(1.2)';
+                                setTimeout(() => cell.style.transform = 'scale(1)', 300);
+                            }, (i * row.length + j) * 250);
+                            matrixDiv.appendChild(cell);
+                        });
+                    });
+                    
+                    headDiv.appendChild(matrixDiv);
+                    container.appendChild(headDiv);
+                }, headIdx * 1000);
+            });
+        }
+        
+        function animateLayer(layerId) {
+            const layer = document.getElementById(layerId);
+            
+            if (layerId === 'decoder-ff-layer') {
+                createFeedForwardVisualization('ff-visualization');
+            } else if (layerId === 'encoder-ff-layer') {
+                createFeedForwardVisualization('encoder-ff-visualization');
+            } else {
+                layer.style.background = 'linear-gradient(90deg, #f0f0f0, #667eea, #f0f0f0)';
+                layer.style.backgroundSize = '200% 100%';
+                layer.style.animation = 'gradient 2s ease-in-out';
+            }
+        }
+        
+        function createFeedForwardVisualization(containerId) {
+            const container = document.getElementById(containerId);
+            const isDecoder = containerId === 'ff-visualization';
+            
+            const contextText = isDecoder 
+                ? 'Processes attention outputs to refine word predictions'
+                : 'Processes attention outputs to enrich contextual understanding';
+                
+            const purposeText = isDecoder
+                ? 'Each position independently transforms its representation for final prediction'
+                : 'Each token independently enhances its contextual representation';
+            
+            container.innerHTML = `
+                <div style="font-size: 0.8em; color: #555; margin-bottom: 8px; font-style: italic;">
+                    ${contextText}
+                </div>
+                <div class="ff-layer-viz">
+                    <div>
+                        <div style="font-weight: bold; margin-bottom: 3px;">Input (512)</div>
+                        <div class="ff-neurons" id="${containerId}-input"></div>
+                    </div>
+                    <div class="ff-arrow">→</div>
+                    <div>
+                        <div style="font-weight: bold; margin-bottom: 3px;">Hidden (2048)</div>
+                        <div class="ff-neurons" id="${containerId}-hidden"></div>
+                        <div style="font-size: 0.7em; color: #666;">ReLU(x·W₁ + b₁)</div>
+                        <div class="relu-explanation">
+                            ReLU(x) = max(0, x)<br>
+                            Keeps positive values, zeros out negatives
+                        </div>
+                    </div>
+                    <div class="ff-arrow">→</div>
+                    <div>
+                        <div style="font-weight: bold; margin-bottom: 3px;">Output (512)</div>
+                        <div class="ff-neurons" id="${containerId}-output"></div>
+                        <div style="font-size: 0.7em; color: #666;">x·W₂ + b₂</div>
+                    </div>
+                </div>
+                <div style="font-size: 0.75em; color: #555; margin-top: 8px;">
+                    ${purposeText}
+                </div>
+            `;
+            
+            // Create neurons for each layer
+            const layers = [
+                { id: `${containerId}-input`, count: 8, color: isDecoder ? '#4caf50' : '#9c27b0' },
+                { id: `${containerId}-hidden`, count: 12, color: isDecoder ? '#ff9800' : '#e91e63' },
+                { id: `${containerId}-output`, count: 8, color: isDecoder ? '#2196f3' : '#3f51b5' }
+            ];
+            
+            layers.forEach((layer, layerIdx) => {
+                const neuronContainer = document.getElementById(layer.id);
+                for (let i = 0; i < layer.count; i++) {
+                    const neuron = document.createElement('div');
+                    neuron.className = 'ff-neuron';
+                    setTimeout(() => {
+                        neuron.style.background = layer.color;
+                        neuron.style.boxShadow = `0 0 8px ${layer.color}`;
+                        neuron.style.transform = 'scale(1.3)';
+                        setTimeout(() => neuron.style.transform = 'scale(1)', 200);
+                    }, layerIdx * 500 + i * 100);
+                    neuronContainer.appendChild(neuron);
+                }
+            });
+        }
+        
+        function createOutputProbabilities() {
+            const container = document.getElementById('output-probs');
+            const predictions = [
+                { word: 'sleeping', prob: 0.35 },
+                { word: 'running', prob: 0.25 },
+                { word: 'eating', prob: 0.20 },
+                { word: 'playing', prob: 0.15 },
+                { word: 'sitting', prob: 0.05 }
+            ];
+            
+            predictions.forEach((pred, i) => {
+                setTimeout(() => {
+                    const predDiv = document.createElement('div');
+                    predDiv.innerHTML = `
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin: 5px 0;">
+                            <span><strong>${pred.word}</strong></span>
+                            <span>${(pred.prob * 100).toFixed(1)}%</span>
+                        </div>
+                        <div class="probability-bar">
+                            <div class="probability-fill" style="width: ${pred.prob * 100}%">
+                                ${(pred.prob * 100).toFixed(1)}%
+                            </div>
+                        </div>
+                    `;
+                    container.appendChild(predDiv);
+                }, i * 300);
+            });
+            
+            // Update predictions section
+            setTimeout(() => {
+                document.getElementById('predictions').innerHTML = `
+                    <p><strong>Most likely prediction: "sleeping" (35%)</strong></p>
+                    <p>The model analyzed the context "The cat is..." and determined that "sleeping" is the most probable next word based on patterns learned during training.</p>
+                `;
+            }, 1500);
+        }
+        
+        function createEncoderSection() {
+            const container = document.getElementById('encoder-content');
+            
+            container.innerHTML = `
+                <div style="margin: 10px 0;">
+                    <strong>Self-Attention:</strong> How much each word focuses on others
+                </div>
+                <div class="attention-matrix" id="encoder-matrix"></div>
+                <div style="margin: 10px 0; font-size: 0.8em; color: #666;">
+                    "cat" pays attention to "is" (what it might do)
+                </div>
+            `;
+            
+            const tokens = ['The', 'cat', 'is', '[MASK]'];
+            const weights = [
+                [0.3, 0.2, 0.3, 0.2],  // The
+                [0.1, 0.4, 0.4, 0.1],  // cat focuses on "is" 
+                [0.2, 0.4, 0.2, 0.2],  // is
+                [0.2, 0.3, 0.3, 0.2]   // [MASK]
+            ];
+            
+            const matrixContainer = document.getElementById('encoder-matrix');
+            weights.forEach((row, i) => {
+                row.forEach((weight, j) => {
+                    const cell = document.createElement('div');
+                    cell.className = 'attention-cell';
+                    cell.textContent = weight.toFixed(1);
+                    cell.title = `${tokens[i]} → ${tokens[j]}: ${weight.toFixed(2)}`;
+                    setTimeout(() => {
+                        cell.style.background = `rgba(76, 175, 80, ${weight})`;
+                        cell.style.color = weight > 0.3 ? 'white' : 'black';
+                        cell.style.transform = 'scale(1.2)';
+                        setTimeout(() => cell.style.transform = 'scale(1)', 300);
+                    }, (i * 4 + j) * 200);
+                    matrixContainer.appendChild(cell);
+                });
+            });
+        }
+        
+        function createDecoderSection() {
+            const container = document.getElementById('decoder-content');
+            
+            container.innerHTML = `
+                <div style="margin: 10px 0;">
+                    <strong>Masked Attention:</strong> Can only see previous words
+                </div>
+                <div class="attention-matrix" id="decoder-masked" style="grid-template-columns: repeat(2, 1fr); max-width: 120px;"></div>
+                <div style="margin: 15px 0;">
+                    <strong>Cross-Attention:</strong> Focuses on encoder's "cat is" understanding
+                </div>
+                <div class="attention-matrix" id="decoder-cross"></div>
+            `;
+            
+            // Masked attention
+            const maskedWeights = [
+                [1.0, 0.0],  // <START> can only see itself
+                [0.7, 0.3]   // current prediction can see <START> and itself
+            ];
+            
+            const maskedContainer = document.getElementById('decoder-masked');
+            maskedWeights.forEach((row, i) => {
+                row.forEach((weight, j) => {
+                    const cell = document.createElement('div');
+                    cell.className = 'attention-cell';
+                    cell.textContent = weight.toFixed(1);
+                    setTimeout(() => {
+                        cell.style.background = `rgba(233, 30, 99, ${weight})`;
+                        cell.style.color = weight > 0.5 ? 'white' : 'black';
+                        cell.style.transform = 'scale(1.2)';
+                        setTimeout(() => cell.style.transform = 'scale(1)', 300);
+                    }, (i * 2 + j) * 300);
+                    maskedContainer.appendChild(cell);
+                });
+            });
+            
+            // Cross attention
+            setTimeout(() => {
+                const crossContainer = document.getElementById('decoder-cross');
+                crossContainer.style.gridTemplateColumns = 'repeat(4, 1fr)';
+                const crossWeights = [0.1, 0.4, 0.4, 0.1];  // Focuses on "cat is"
+                crossWeights.forEach((weight, j) => {
+                    const cell = document.createElement('div');
+                    cell.className = 'attention-cell';
+                    cell.textContent = weight.toFixed(1);
+                    cell.title = `Decoder → ${['The', 'cat', 'is', '[MASK]'][j]}`;
+                    setTimeout(() => {
+                        cell.style.background = `rgba(63, 81, 181, ${weight})`;
+                        cell.style.color = weight > 0.3 ? 'white' : 'black';
+                        cell.style.transform = 'scale(1.2)';
+                        setTimeout(() => cell.style.transform = 'scale(1)', 300);
+                    }, j * 200);
+                    crossContainer.appendChild(cell);
+                });
+            }, 1000);
+        }
+        
+        function createSimplifiedOutput() {
+            const container = document.getElementById('output-probs');
+            const predictions = [
+                { word: 'sleeping', prob: 0.7 },
+                { word: 'sitting', prob: 0.2 },
+                { word: 'walking', prob: 0.1 }
+            ];
+            
+            container.innerHTML = '<div style="font-weight: bold; margin-bottom: 10px;">Final Predictions for [MASK]:</div>';
+            
+            predictions.forEach((pred, i) => {
+                setTimeout(() => {
+                    const predDiv = document.createElement('div');
+                    predDiv.innerHTML = `
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin: 8px 0;">
+                            <span><strong>${pred.word}</strong></span>
+                            <span>${(pred.prob * 100).toFixed(0)}%</span>
+                        </div>
+                        <div class="probability-bar">
+                            <div class="probability-fill" style="width: ${pred.prob * 100}%">
+                                ${(pred.prob * 100).toFixed(0)}%
+                            </div>
+                        </div>
+                    `;
+                    container.appendChild(predDiv);
+                }, i * 400);
+            });
+        }
+
+        // Add CSS animation
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes gradient {
+                0% { background-position: 0% 50%; }
+                50% { background-position: 100% 50%; }
+                100% { background-position: 0% 50%; }
+            }
+        `;
+        document.head.appendChild(style);
+    </script>
+</body>
+</html>
